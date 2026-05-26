@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 28px;
+        }
+
+        .goal-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .goal-section label {
+            display: block;
+            color: #555;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .goal-section input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .goal-section input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .progress-section {
+            margin-bottom: 30px;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+
+        .input-section {
+            margin-bottom: 20px;
+        }
+
+        .input-section label {
+            display: block;
+            color: #555;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-section input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .input-section input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .company-list {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .company-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: white;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+        }
+
+        .company-name {
+            color: #333;
+            font-weight: 500;
+        }
+
+        .delete-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.2s;
+        }
+
+        .delete-btn:hover {
+            background: #ff5252;
+        }
+
+        .empty-message {
+            text-align: center;
+            color: #999;
+            padding: 20px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📋 Application Tracker</h1>
+
+        <div class="goal-section">
+            <label for="goalInput">Set Your Goal:</label>
+            <input 
+                type="number" 
+                id="goalInput" 
+                placeholder="Enter your application goal (e.g., 50)" 
+                value="50"
+                min="1"
+            >
+        </div>
+
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-label">Applications</div>
+                <div class="stat-number" id="count">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Progress</div>
+                <div class="stat-number" id="percentage">0%</div>
+            </div>
+        </div>
+
+        <div class="progress-section">
+            <div class="progress-label">
+                <span>Goal Progress</span>
+                <span id="progressText">0 / 50</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <div class="input-section">
+            <label for="companyInput">Add Company:</label>
+            <div class="input-group">
+                <input 
+                    type="text" 
+                    id="companyInput" 
+                    placeholder="Enter company name" 
+                >
+                <button class="btn" onclick="addCompany()">Add</button>
+            </div>
+        </div>
+
+        <div class="company-list" id="companyList">
+            <div class="empty-message">No applications yet. Start adding!</div>
+        </div>
+    </div>
+
+    <script>
+        let companies = JSON.parse(localStorage.getItem('companies')) || [];
+
+        const goalInput = document.getElementById('goalInput');
+        const companyInput = document.getElementById('companyInput');
+        const countDisplay = document.getElementById('count');
+        const percentageDisplay = document.getElementById('percentage');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const companyList = document.getElementById('companyList');
+
+        // Load goal from localStorage or use default
+        const savedGoal = localStorage.getItem('goal');
+        if (savedGoal) {
+            goalInput.value = savedGoal;
+        }
+
+        function updateDisplay() {
+            const goal = parseInt(goalInput.value) || 50;
+            const count = companies.length;
+            const percentage = Math.round((count / goal) * 100);
+
+            countDisplay.textContent = count;
+            percentageDisplay.textContent = (percentage > 100 ? 100 : percentage) + '%';
+            progressFill.style.width = Math.min(percentage, 100) + '%';
+            progressText.textContent = `${count} / ${goal}`;
+
+            renderCompanyList();
+        }
+
+        function addCompany() {
+            const name = companyInput.value.trim();
+            if (name === '') {
+                alert('Please enter a company name');
+                return;
+            }
+
+            companies.push({
+                id: Date.now(),
+                name: name,
+                date: new Date().toLocaleDateString()
+            });
+
+            companyInput.value = '';
+            saveData();
+            updateDisplay();
+            companyInput.focus();
+        }
+
+        function removeCompany(id) {
+            companies = companies.filter(c => c.id !== id);
+            saveData();
+            updateDisplay();
+        }
+
+        function saveData() {
+            localStorage.setItem('companies', JSON.stringify(companies));
+            localStorage.setItem('goal', goalInput.value);
+        }
+
+        function renderCompanyList() {
+            if (companies.length === 0) {
+                companyList.innerHTML = '<div class="empty-message">No applications yet. Start adding!</div>';
+                return;
+            }
+
+            companyList.innerHTML = companies
+                .map((company, index) => `
+                    <div class="company-item">
+                        <div>
+                            <div class="company-name">${index + 1}. ${company.name}</div>
+                            <div style="font-size: 12px; color: #999;">${company.date}</div>
+                        </div>
+                        <button class="delete-btn" onclick="removeCompany(${company.id})">Delete</button>
+                    </div>
+                `)
+                .join('');
+        }
+
+        // Event listeners
+        goalInput.addEventListener('change', () => {
+            saveData();
+            updateDisplay();
+        });
+
+        companyInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addCompany();
+            }
+        });
+
+        // Initial display
+        updateDisplay();
+    </script>
+</body>
+</html>
