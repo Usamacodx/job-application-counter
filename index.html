@@ -453,37 +453,17 @@
         <div id="mini-goals" class="tab-content">
             <div class="mini-goal-form">
                 <h3 style="margin-bottom: 15px; color: #333;">Create a Mini Goal</h3>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="miniGoalCount">Applications Target:</label>
-                        <input 
-                            type="number" 
-                            id="miniGoalCount" 
-                            placeholder="e.g., 5" 
-                            min="1"
-                        >
-                    </div>
-                    <div class="form-group">
-                        <label for="miniGoalPeriod">Goal Type:</label>
-                        <select id="miniGoalPeriod">
-                            <option value="daily">Daily</option>
-                            <option value="weekly" selected>Weekly</option>
-                            <option value="monthly">Monthly</option>
-                            <option value="custom">Custom Days</option>
-                            <option value="timerange">Time Range Today</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group" id="customDaysGroup" style="display: none;">
-                    <label for="customDays">Number of Days:</label>
+                <div class="form-group">
+                    <label for="miniGoalCount">Applications Target:</label>
                     <input 
                         type="number" 
-                        id="customDays" 
-                        placeholder="e.g., 14" 
+                        id="miniGoalCount" 
+                        placeholder="e.g., 5" 
                         min="1"
                     >
                 </div>
-                <div id="timeRangeGroup" style="display: none;">
+                <div id="timeRangeGroup">
+                    <h4 style="color: #555; margin-bottom: 12px; font-size: 14px;">Set Time Frame</h4>
                     <div class="form-row">
                         <div class="form-group">
                             <label for="startTime">Start Time:</label>
@@ -566,13 +546,13 @@
         // Mini goal period change
         miniGoalPeriod.addEventListener('change', function() {
             if (this.value === 'custom') {
-                customDaysGroup.style.display = 'block';
+                document.getElementById('customDaysGroup').style.display = 'block';
                 document.getElementById('timeRangeGroup').style.display = 'none';
             } else if (this.value === 'timerange') {
-                customDaysGroup.style.display = 'none';
+                document.getElementById('customDaysGroup').style.display = 'none';
                 document.getElementById('timeRangeGroup').style.display = 'block';
             } else {
-                customDaysGroup.style.display = 'none';
+                document.getElementById('customDaysGroup').style.display = 'none';
                 document.getElementById('timeRangeGroup').style.display = 'none';
             }
         });
@@ -589,8 +569,6 @@
 
         function createMiniGoal() {
             const count = parseInt(document.getElementById('miniGoalCount').value);
-            const period = miniGoalPeriod.value;
-            const customDays = parseInt(document.getElementById('customDays').value) || 0;
             const startTime = document.getElementById('startTime').value;
             const endTime = document.getElementById('endTime').value;
 
@@ -599,47 +577,32 @@
                 return;
             }
 
-            if (period === 'custom' && (!customDays || customDays < 1)) {
-                alert('Please enter a valid number of days');
+            if (!startTime || !endTime) {
+                alert('Please set both start and end times');
                 return;
             }
 
-            if (period === 'timerange') {
-                if (!startTime || !endTime) {
-                    alert('Please set both start and end times');
-                    return;
-                }
-                if (startTime >= endTime) {
-                    alert('End time must be after start time');
-                    return;
-                }
+            if (startTime >= endTime) {
+                alert('End time must be after start time');
+                return;
             }
 
-            let startDate, endDate;
-
-            if (period === 'timerange') {
-                const today = new Date();
-                const [startHour, startMin] = startTime.split(':');
-                const [endHour, endMin] = endTime.split(':');
-                
-                startDate = new Date(today);
-                startDate.setHours(parseInt(startHour), parseInt(startMin), 0, 0);
-                
-                endDate = new Date(today);
-                endDate.setHours(parseInt(endHour), parseInt(endMin), 59, 999);
-            } else {
-                const days = getPeriodDays(period, customDays);
-                startDate = new Date();
-                endDate = new Date(startDate.getTime() + days * 24 * 60 * 60 * 1000);
-            }
+            const today = new Date();
+            const [startHour, startMin] = startTime.split(':');
+            const [endHour, endMin] = endTime.split(':');
+            
+            const startDate = new Date(today);
+            startDate.setHours(parseInt(startHour), parseInt(startMin), 0, 0);
+            
+            const endDate = new Date(today);
+            endDate.setHours(parseInt(endHour), parseInt(endMin), 59, 999);
 
             miniGoals.push({
                 id: Date.now(),
                 target: count,
-                period: period,
-                customDays: customDays,
-                startTime: period === 'timerange' ? startTime : null,
-                endTime: period === 'timerange' ? endTime : null,
+                period: 'timerange',
+                startTime: startTime,
+                endTime: endTime,
                 startDate: startDate.toISOString(),
                 endDate: endDate.toISOString(),
                 completed: false,
@@ -647,12 +610,8 @@
             });
 
             document.getElementById('miniGoalCount').value = '';
-            document.getElementById('customDays').value = '';
             document.getElementById('startTime').value = '';
             document.getElementById('endTime').value = '';
-            miniGoalPeriod.value = 'weekly';
-            customDaysGroup.style.display = 'none';
-            document.getElementById('timeRangeGroup').style.display = 'none';
 
             saveData();
             updateDisplay();
@@ -661,10 +620,35 @@
         function getApplicationsInPeriod(goal) {
             const startDate = new Date(goal.startDate);
             const endDate = new Date(goal.endDate);
-            const applicationsInPeriod = companies.filter(company => {
-                const companyDate = new Date(company.date);
-                return companyDate >= startDate && companyDate <= endDate;
-            }).length;
+            
+            let applicationsInPeriod = 0;
+
+            if (goal.period === 'timerange') {
+                // For time range, check if applications were added today between start and end times
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                const [startHour, startMin] = goal.startTime.split(':');
+                const [endHour, endMin] = goal.endTime.split(':');
+                
+                const timeRangeStart = new Date(today);
+                timeRangeStart.setHours(parseInt(startHour), parseInt(startMin), 0, 0);
+                
+                const timeRangeEnd = new Date(today);
+                timeRangeEnd.setHours(parseInt(endHour), parseInt(endMin), 59, 999);
+                
+                applicationsInPeriod = companies.filter(company => {
+                    const companyDate = new Date(company.date);
+                    return companyDate >= timeRangeStart && companyDate <= timeRangeEnd;
+                }).length;
+            } else {
+                // For date-based goals, check if applications were added within the date range
+                applicationsInPeriod = companies.filter(company => {
+                    const companyDate = new Date(company.date);
+                    return companyDate >= startDate && companyDate <= endDate;
+                }).length;
+            }
+            
             return applicationsInPeriod;
         }
 
@@ -696,6 +680,7 @@
                 const progress = Math.min((applicationsInPeriod / goal.target) * 100, 100);
                 const endDate = new Date(goal.endDate);
                 const today = new Date();
+                today.setHours(23, 59, 59, 999);
                 const isExpired = today > endDate;
 
                 let status = 'on-track';
@@ -712,28 +697,13 @@
                     statusText = '✓ Completed';
                 }
 
-                let periodDisplay = '';
-                if (goal.period === 'timerange') {
-                    periodDisplay = `${goal.startTime} to ${goal.endTime}`;
-                } else if (goal.period === 'custom') {
-                    periodDisplay = `${goal.customDays} days`;
-                } else {
-                    periodDisplay = goal.period;
-                }
-
-                let dateDisplay = '';
-                if (goal.period === 'timerange') {
-                    const startDate = new Date(goal.startDate);
-                    dateDisplay = `Today: ${goal.startTime} - ${goal.endTime}`;
-                } else {
-                    const startDate = new Date(goal.startDate);
-                    dateDisplay = `From ${startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()}`;
-                }
+                const timeDisplay = `${goal.startTime} - ${goal.endTime}`;
+                const dateDisplay = `Today (${new Date().toLocaleDateString()}): ${goal.startTime} - ${goal.endTime}`;
 
                 return `
                     <div class="mini-goal-item">
                         <div class="mini-goal-header">
-                            <div class="mini-goal-title">${goal.target} applications - ${periodDisplay}</div>
+                            <div class="mini-goal-title">${goal.target} applications between ${timeDisplay}</div>
                             <div class="mini-goal-status status-${status}">${statusText}</div>
                         </div>
                         <div class="mini-goal-time">
@@ -781,7 +751,7 @@
             companies.push({
                 id: Date.now(),
                 name: name,
-                date: new Date().toISOString().split('T')[0]
+                date: new Date().toISOString()
             });
 
             companyInput.value = '';
@@ -814,7 +784,7 @@
                     <div class="company-item">
                         <div>
                             <div class="company-name">${companies.length - index}. ${company.name}</div>
-                            <div style="font-size: 12px; color: #999;">${new Date(company.date).toLocaleDateString()}</div>
+                            <div style="font-size: 12px; color: #999;">${new Date(company.date).toLocaleString()}</div>
                         </div>
                         <button class="delete-btn" onclick="removeCompany(${company.id})">Delete</button>
                     </div>
