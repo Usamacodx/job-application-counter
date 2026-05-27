@@ -216,63 +216,304 @@
             padding: 20px;
             font-style: italic;
         }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab-btn {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            color: #999;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .mini-goal-form {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #555;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .mini-goal-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            border-left: 4px solid #667eea;
+        }
+
+        .mini-goal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .mini-goal-title {
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .mini-goal-status {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .status-on-track {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-behind {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-completed {
+            background: #cfe2ff;
+            color: #084298;
+        }
+
+        .mini-goal-time {
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 10px;
+        }
+
+        .mini-goal-progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .mini-goal-progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .mini-goal-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+            border-radius: 4px;
+        }
+
+        .mini-goal-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .mini-goal-actions button {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-complete {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-complete:hover {
+            background: #218838;
+        }
+
+        .btn-delete-mini {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-delete-mini:hover {
+            background: #c82333;
+        }
+
+        .mini-goals-empty {
+            text-align: center;
+            color: #999;
+            padding: 30px 20px;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>📋 Application Tracker</h1>
 
-        <div class="goal-section">
-            <label for="goalInput">Set Your Goal:</label>
-            <input 
-                type="number" 
-                id="goalInput" 
-                placeholder="Enter your application goal (e.g., 50)" 
-                value="50"
-                min="1"
-            >
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('overview')">Overview</button>
+            <button class="tab-btn" onclick="switchTab('mini-goals')">Mini Goals</button>
+            <button class="tab-btn" onclick="switchTab('companies')">Companies</button>
         </div>
 
-        <div class="stats">
-            <div class="stat-box">
-                <div class="stat-label">Applications</div>
-                <div class="stat-number" id="count">0</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-label">Progress</div>
-                <div class="stat-number" id="percentage">0%</div>
-            </div>
-        </div>
-
-        <div class="progress-section">
-            <div class="progress-label">
-                <span>Goal Progress</span>
-                <span id="progressText">0 / 50</span>
-            </div>
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
-            </div>
-        </div>
-
-        <div class="input-section">
-            <label for="companyInput">Add Company:</label>
-            <div class="input-group">
+        <!-- OVERVIEW TAB -->
+        <div id="overview" class="tab-content active">
+            <div class="goal-section">
+                <label for="goalInput">Set Your Goal:</label>
                 <input 
-                    type="text" 
-                    id="companyInput" 
-                    placeholder="Enter company name" 
+                    type="number" 
+                    id="goalInput" 
+                    placeholder="Enter your application goal (e.g., 50)" 
+                    value="50"
+                    min="1"
                 >
-                <button class="btn" onclick="addCompany()">Add</button>
+            </div>
+
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="stat-label">Applications</div>
+                    <div class="stat-number" id="count">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Progress</div>
+                    <div class="stat-number" id="percentage">0%</div>
+                </div>
+            </div>
+
+            <div class="progress-section">
+                <div class="progress-label">
+                    <span>Goal Progress</span>
+                    <span id="progressText">0 / 50</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                </div>
             </div>
         </div>
 
-        <div class="company-list" id="companyList">
-            <div class="empty-message">No applications yet. Start adding!</div>
+        <!-- MINI GOALS TAB -->
+        <div id="mini-goals" class="tab-content">
+            <div class="mini-goal-form">
+                <h3 style="margin-bottom: 15px; color: #333;">Create a Mini Goal</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="miniGoalCount">Applications Target:</label>
+                        <input 
+                            type="number" 
+                            id="miniGoalCount" 
+                            placeholder="e.g., 5" 
+                            min="1"
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label for="miniGoalPeriod">Time Period:</label>
+                        <select id="miniGoalPeriod">
+                            <option value="daily">Daily</option>
+                            <option value="weekly" selected>Weekly</option>
+                            <option value="monthly">Monthly</option>
+                            <option value="custom">Custom Days</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" id="customDaysGroup" style="display: none;">
+                    <label for="customDays">Number of Days:</label>
+                    <input 
+                        type="number" 
+                        id="customDays" 
+                        placeholder="e.g., 14" 
+                        min="1"
+                    >
+                </div>
+                <button class="btn" onclick="createMiniGoal()" style="width: 100%;">Create Mini Goal</button>
+            </div>
+
+            <h3 style="margin-bottom: 15px; color: #333;">Active Mini Goals</h3>
+            <div id="miniGoalsList">
+                <div class="mini-goals-empty">No mini goals yet. Create one to get started!</div>
+            </div>
+        </div>
+
+        <!-- COMPANIES TAB -->
+        <div id="companies" class="tab-content">
+            <div class="input-section">
+                <label for="companyInput">Add Company:</label>
+                <div class="input-group">
+                    <input 
+                        type="text" 
+                        id="companyInput" 
+                        placeholder="Enter company name" 
+                    >
+                    <button class="btn" onclick="addCompany()">Add</button>
+                </div>
+            </div>
+
+            <div class="company-list" id="companyList">
+                <div class="empty-message">No applications yet. Start adding!</div>
+            </div>
         </div>
     </div>
 
     <script>
         let companies = JSON.parse(localStorage.getItem('companies')) || [];
+        let miniGoals = JSON.parse(localStorage.getItem('miniGoals')) || [];
 
         const goalInput = document.getElementById('goalInput');
         const companyInput = document.getElementById('companyInput');
@@ -281,11 +522,167 @@
         const progressFill = document.getElementById('progressFill');
         const progressText = document.getElementById('progressText');
         const companyList = document.getElementById('companyList');
+        const miniGoalPeriod = document.getElementById('miniGoalPeriod');
+        const customDaysGroup = document.getElementById('customDaysGroup');
 
         // Load goal from localStorage or use default
         const savedGoal = localStorage.getItem('goal');
         if (savedGoal) {
             goalInput.value = savedGoal;
+        }
+
+        // Tab switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Mini goal period change
+        miniGoalPeriod.addEventListener('change', function() {
+            if (this.value === 'custom') {
+                customDaysGroup.style.display = 'block';
+            } else {
+                customDaysGroup.style.display = 'none';
+            }
+        });
+
+        function getPeriodDays(period, customDays = 0) {
+            const periods = {
+                'daily': 1,
+                'weekly': 7,
+                'monthly': 30,
+                'custom': customDays
+            };
+            return periods[period] || 7;
+        }
+
+        function createMiniGoal() {
+            const count = parseInt(document.getElementById('miniGoalCount').value);
+            const period = miniGoalPeriod.value;
+            const customDays = parseInt(document.getElementById('customDays').value) || 0;
+
+            if (!count || count < 1) {
+                alert('Please enter a valid target number');
+                return;
+            }
+
+            if (period === 'custom' && (!customDays || customDays < 1)) {
+                alert('Please enter a valid number of days');
+                return;
+            }
+
+            const days = getPeriodDays(period, customDays);
+            const startDate = new Date();
+            const endDate = new Date(startDate.getTime() + days * 24 * 60 * 60 * 1000);
+
+            miniGoals.push({
+                id: Date.now(),
+                target: count,
+                period: period,
+                customDays: customDays,
+                startDate: startDate.toISOString(),
+                endDate: endDate.toISOString(),
+                completed: false,
+                applicationsAtCreation: companies.length
+            });
+
+            document.getElementById('miniGoalCount').value = '';
+            document.getElementById('customDays').value = '';
+            miniGoalPeriod.value = 'weekly';
+            customDaysGroup.style.display = 'none';
+
+            saveData();
+            updateDisplay();
+        }
+
+        function getApplicationsInPeriod(goal) {
+            const startDate = new Date(goal.startDate);
+            const endDate = new Date(goal.endDate);
+            const applicationsInPeriod = companies.filter(company => {
+                const companyDate = new Date(company.date);
+                return companyDate >= startDate && companyDate <= endDate;
+            }).length;
+            return applicationsInPeriod;
+        }
+
+        function deleteMiniGoal(id) {
+            miniGoals = miniGoals.filter(g => g.id !== id);
+            saveData();
+            updateDisplay();
+        }
+
+        function completeMiniGoal(id) {
+            const goal = miniGoals.find(g => g.id === id);
+            if (goal) {
+                goal.completed = true;
+                saveData();
+                updateDisplay();
+            }
+        }
+
+        function renderMiniGoals() {
+            const miniGoalsList = document.getElementById('miniGoalsList');
+
+            if (miniGoals.length === 0) {
+                miniGoalsList.innerHTML = '<div class="mini-goals-empty">No mini goals yet. Create one to get started!</div>';
+                return;
+            }
+
+            miniGoalsList.innerHTML = miniGoals.map(goal => {
+                const applicationsInPeriod = getApplicationsInPeriod(goal);
+                const progress = Math.min((applicationsInPeriod / goal.target) * 100, 100);
+                const endDate = new Date(goal.endDate);
+                const today = new Date();
+                const isExpired = today > endDate;
+
+                let status = 'on-track';
+                let statusText = 'On Track';
+
+                if (goal.completed) {
+                    status = 'completed';
+                    statusText = '✓ Completed';
+                } else if (isExpired) {
+                    status = 'behind';
+                    statusText = 'Expired';
+                } else if (applicationsInPeriod >= goal.target) {
+                    status = 'completed';
+                    statusText = '✓ Completed';
+                }
+
+                const periodName = goal.period === 'custom' ? `${goal.customDays} days` : goal.period;
+
+                return `
+                    <div class="mini-goal-item">
+                        <div class="mini-goal-header">
+                            <div class="mini-goal-title">${goal.target} applications - ${periodName}</div>
+                            <div class="mini-goal-status status-${status}">${statusText}</div>
+                        </div>
+                        <div class="mini-goal-time">
+                            From ${new Date(goal.startDate).toLocaleDateString()} to ${endDate.toLocaleDateString()}
+                        </div>
+                        <div class="mini-goal-progress-label">
+                            <span>Progress: ${applicationsInPeriod} / ${goal.target}</span>
+                            <span>${Math.round(progress)}%</span>
+                        </div>
+                        <div class="mini-goal-progress-bar">
+                            <div class="mini-goal-progress-fill" style="width: ${progress}%"></div>
+                        </div>
+                        <div class="mini-goal-actions">
+                            ${!goal.completed && applicationsInPeriod >= goal.target ? 
+                                `<button class="mini-goal-actions button btn-complete" onclick="completeMiniGoal(${goal.id})">Mark Complete</button>` : 
+                                ''}
+                            <button class="mini-goal-actions button btn-delete-mini" onclick="deleteMiniGoal(${goal.id})">Delete</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
         function updateDisplay() {
@@ -299,6 +696,7 @@
             progressText.textContent = `${count} / ${goal}`;
 
             renderCompanyList();
+            renderMiniGoals();
         }
 
         function addCompany() {
@@ -311,7 +709,7 @@
             companies.push({
                 id: Date.now(),
                 name: name,
-                date: new Date().toLocaleDateString()
+                date: new Date().toISOString().split('T')[0]
             });
 
             companyInput.value = '';
@@ -328,6 +726,7 @@
 
         function saveData() {
             localStorage.setItem('companies', JSON.stringify(companies));
+            localStorage.setItem('miniGoals', JSON.stringify(miniGoals));
             localStorage.setItem('goal', goalInput.value);
         }
 
@@ -338,11 +737,12 @@
             }
 
             companyList.innerHTML = companies
+                .reverse()
                 .map((company, index) => `
                     <div class="company-item">
                         <div>
-                            <div class="company-name">${index + 1}. ${company.name}</div>
-                            <div style="font-size: 12px; color: #999;">${company.date}</div>
+                            <div class="company-name">${companies.length - index}. ${company.name}</div>
+                            <div style="font-size: 12px; color: #999;">${new Date(company.date).toLocaleDateString()}</div>
                         </div>
                         <button class="delete-btn" onclick="removeCompany(${company.id})">Delete</button>
                     </div>
