@@ -464,12 +464,13 @@
                         >
                     </div>
                     <div class="form-group">
-                        <label for="miniGoalPeriod">Time Period:</label>
+                        <label for="miniGoalPeriod">Goal Type:</label>
                         <select id="miniGoalPeriod">
                             <option value="daily">Daily</option>
                             <option value="weekly" selected>Weekly</option>
                             <option value="monthly">Monthly</option>
                             <option value="custom">Custom Days</option>
+                            <option value="timerange">Time Range Today</option>
                         </select>
                     </div>
                 </div>
@@ -481,6 +482,24 @@
                         placeholder="e.g., 14" 
                         min="1"
                     >
+                </div>
+                <div id="timeRangeGroup" style="display: none;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="startTime">Start Time:</label>
+                            <input 
+                                type="time" 
+                                id="startTime"
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label for="endTime">End Time:</label>
+                            <input 
+                                type="time" 
+                                id="endTime"
+                            >
+                        </div>
+                    </div>
                 </div>
                 <button class="btn" onclick="createMiniGoal()" style="width: 100%;">Create Mini Goal</button>
             </div>
@@ -548,8 +567,13 @@
         miniGoalPeriod.addEventListener('change', function() {
             if (this.value === 'custom') {
                 customDaysGroup.style.display = 'block';
+                document.getElementById('timeRangeGroup').style.display = 'none';
+            } else if (this.value === 'timerange') {
+                customDaysGroup.style.display = 'none';
+                document.getElementById('timeRangeGroup').style.display = 'block';
             } else {
                 customDaysGroup.style.display = 'none';
+                document.getElementById('timeRangeGroup').style.display = 'none';
             }
         });
 
@@ -567,6 +591,8 @@
             const count = parseInt(document.getElementById('miniGoalCount').value);
             const period = miniGoalPeriod.value;
             const customDays = parseInt(document.getElementById('customDays').value) || 0;
+            const startTime = document.getElementById('startTime').value;
+            const endTime = document.getElementById('endTime').value;
 
             if (!count || count < 1) {
                 alert('Please enter a valid target number');
@@ -578,15 +604,42 @@
                 return;
             }
 
-            const days = getPeriodDays(period, customDays);
-            const startDate = new Date();
-            const endDate = new Date(startDate.getTime() + days * 24 * 60 * 60 * 1000);
+            if (period === 'timerange') {
+                if (!startTime || !endTime) {
+                    alert('Please set both start and end times');
+                    return;
+                }
+                if (startTime >= endTime) {
+                    alert('End time must be after start time');
+                    return;
+                }
+            }
+
+            let startDate, endDate;
+
+            if (period === 'timerange') {
+                const today = new Date();
+                const [startHour, startMin] = startTime.split(':');
+                const [endHour, endMin] = endTime.split(':');
+                
+                startDate = new Date(today);
+                startDate.setHours(parseInt(startHour), parseInt(startMin), 0, 0);
+                
+                endDate = new Date(today);
+                endDate.setHours(parseInt(endHour), parseInt(endMin), 59, 999);
+            } else {
+                const days = getPeriodDays(period, customDays);
+                startDate = new Date();
+                endDate = new Date(startDate.getTime() + days * 24 * 60 * 60 * 1000);
+            }
 
             miniGoals.push({
                 id: Date.now(),
                 target: count,
                 period: period,
                 customDays: customDays,
+                startTime: period === 'timerange' ? startTime : null,
+                endTime: period === 'timerange' ? endTime : null,
                 startDate: startDate.toISOString(),
                 endDate: endDate.toISOString(),
                 completed: false,
@@ -595,8 +648,11 @@
 
             document.getElementById('miniGoalCount').value = '';
             document.getElementById('customDays').value = '';
+            document.getElementById('startTime').value = '';
+            document.getElementById('endTime').value = '';
             miniGoalPeriod.value = 'weekly';
             customDaysGroup.style.display = 'none';
+            document.getElementById('timeRangeGroup').style.display = 'none';
 
             saveData();
             updateDisplay();
@@ -656,16 +712,32 @@
                     statusText = '✓ Completed';
                 }
 
-                const periodName = goal.period === 'custom' ? `${goal.customDays} days` : goal.period;
+                let periodDisplay = '';
+                if (goal.period === 'timerange') {
+                    periodDisplay = `${goal.startTime} to ${goal.endTime}`;
+                } else if (goal.period === 'custom') {
+                    periodDisplay = `${goal.customDays} days`;
+                } else {
+                    periodDisplay = goal.period;
+                }
+
+                let dateDisplay = '';
+                if (goal.period === 'timerange') {
+                    const startDate = new Date(goal.startDate);
+                    dateDisplay = `Today: ${goal.startTime} - ${goal.endTime}`;
+                } else {
+                    const startDate = new Date(goal.startDate);
+                    dateDisplay = `From ${startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()}`;
+                }
 
                 return `
                     <div class="mini-goal-item">
                         <div class="mini-goal-header">
-                            <div class="mini-goal-title">${goal.target} applications - ${periodName}</div>
+                            <div class="mini-goal-title">${goal.target} applications - ${periodDisplay}</div>
                             <div class="mini-goal-status status-${status}">${statusText}</div>
                         </div>
                         <div class="mini-goal-time">
-                            From ${new Date(goal.startDate).toLocaleDateString()} to ${endDate.toLocaleDateString()}
+                            ${dateDisplay}
                         </div>
                         <div class="mini-goal-progress-label">
                             <span>Progress: ${applicationsInPeriod} / ${goal.target}</span>
