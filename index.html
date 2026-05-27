@@ -678,23 +678,32 @@
             miniGoalsList.innerHTML = miniGoals.map(goal => {
                 const applicationsInPeriod = getApplicationsInPeriod(goal);
                 const progress = Math.min((applicationsInPeriod / goal.target) * 100, 100);
-                const endDate = new Date(goal.endDate);
+                
                 const today = new Date();
-                today.setHours(23, 59, 59, 999);
-                const isExpired = today > endDate;
+                const [endHour, endMin] = goal.endTime.split(':');
+                const endTimeToday = new Date(today);
+                endTimeToday.setHours(parseInt(endHour), parseInt(endMin), 59, 999);
+                
+                const isTimeWindowActive = today <= endTimeToday;
 
                 let status = 'on-track';
-                let statusText = 'On Track';
+                let statusText = 'Continuous';
 
                 if (goal.completed) {
                     status = 'completed';
-                    statusText = '✓ Completed';
-                } else if (isExpired) {
-                    status = 'behind';
-                    statusText = 'Expired';
+                    statusText = '✓ Successful';
+                } else if (!isTimeWindowActive) {
+                    // Time window has ended
+                    if (applicationsInPeriod >= goal.target) {
+                        status = 'completed';
+                        statusText = '✓ Successful';
+                    } else {
+                        status = 'behind';
+                        statusText = '✗ Failed';
+                    }
                 } else if (applicationsInPeriod >= goal.target) {
                     status = 'completed';
-                    statusText = '✓ Completed';
+                    statusText = '✓ Successful';
                 }
 
                 const timeDisplay = `${goal.startTime} - ${goal.endTime}`;
@@ -717,7 +726,7 @@
                             <div class="mini-goal-progress-fill" style="width: ${progress}%"></div>
                         </div>
                         <div class="mini-goal-actions">
-                            ${!goal.completed && applicationsInPeriod >= goal.target ? 
+                            ${!goal.completed && applicationsInPeriod >= goal.target && isTimeWindowActive ? 
                                 `<button class="mini-goal-actions button btn-complete" onclick="completeMiniGoal(${goal.id})">Mark Complete</button>` : 
                                 ''}
                             <button class="mini-goal-actions button btn-delete-mini" onclick="deleteMiniGoal(${goal.id})">Delete</button>
